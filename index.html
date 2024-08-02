@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Info Page</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to the external stylesheet -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#xf015;</text></svg>" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="gradient-animation">
+        <div class="date-box" id="dateBox">Loading... <i class="fas fa-calendar-alt"></i></div> <!-- Added Font Awesome icon -->
+        <div class="developer-info">
+            <h1>« Hussam.Fa »</h1>
+            <h1>———————————</h1>
+            <p>• Python Programmer •</p>
+            <p>• My Age : 17 Years.O •</p>
+            <p>• Nationality  : IRAQ   •</p>
+            <h1>———————————</h1>
+            <div class="social-icons">
+                <a href="https://www.instagram.com/7qf7?igsh=MWdiaWg2bTFzN3Frbw==" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://t.me/pmpmm" target="_blank"><i class="fab fa-telegram"></i></a>
+                <a href="https://github.com/sythontm" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+        <div class="navigation-box">
+            <a href="#home" class="nav-button" onclick="scrollToTop()"><i class="fas fa-home"></i></a>
+            <a href="#projects" class="nav-button"><i class="fas fa-folder-open"></i></a>
+            <a href="game.html" class="nav-button"><i class="fas fa-gamepad"></i></a> <!-- Link to the game.html file -->
+        </div>
+    </div>
+
+    <script>
+        function updateDate() {
+            var now = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = now.toLocaleDateString('en-GB', options); 
+            document.getElementById('dateBox').innerHTML = `${formattedDate} <i class="fas fa-calendar-alt"></i>`;
+        }
+        updateDate();
+        setInterval(updateDate, 60000);
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    <script src="https://kit.fontawesome.com/8d7b328be6.js" crossorigin="anonymous"></script>
+</body>
+</html>

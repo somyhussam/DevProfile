@@ -1,0 +1,149 @@
+
+/* Reset some default styles */
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.gradient-animation {
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(45deg, #ee7784, #f4f389);
+    background-size: 400% 400%;
+    animation: gradientAnimation 10s ease infinite;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.date-box {
+    position: absolute;
+    top: 40px; /* Adjusted to position the date box higher */
+    left: 50%;
+    width: 90%;
+    max-width: 600px;
+    transform: translateX(-50%);
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 1;
+}
+
+.developer-info {
+    padding: 20px;
+    width: 80%;
+    transform: translateY(10%);
+    max-width: 600px;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 20px; /* Adjust this value to bring the box closer to the navigation box */
+}
+
+.developer-info h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.developer-info p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+}
+
+.social-icons a {
+    display: inline-block;
+    margin: 0 20px;
+    transition: transform 0.6s ease;
+}
+
+.social-icons a:hover {
+    transform: scale(1.2);
+}
+
+.social-icons i {
+    font-size: 35px;
+    color: #333;
+}
+
+.navigation-box {
+    width: 90%;
+    transform: translateY(60%);
+    max-width: 600px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    z-index: 1;
+    margin-top: 0px; /* Adjust this value to move the navigation box upwards */
+}
+
+.navigation-box .nav-button {
+    display: inline-block;
+    margin: 0 20px;
+    width: 60px;
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.navigation-box .nav-button:hover {
+    background-color: #f0f0f0;
+}
+
+.navigation-box .nav-button i {
+    font-size: 24px; /* Adjust this size as needed */
+    color: #333;
+    line-height: inherit; /* Ensure the icon is vertically centered */
+    vertical-align: middle; /* Additional property to help center the icon */
+}
+
+@media (max-width: 768px) {
+    .developer-info {
+        width: 90%;
+    }
+
+    .navigation-box .nav-button {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+    }
+
+    .navigation-box .nav-button i {
+        font-size: 20px;
+    }
+}
