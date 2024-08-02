@@ -222,7 +222,7 @@
         function updateDate() {
             var now = new Date();
             var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            var formattedDate = now.toLocaleDateString('en-GB', options); 
+            var formattedDate = now.toLocaleDateString('ar-GB', options); 
             document.getElementById('dateBox').innerHTML = `${formattedDate} <i class="fas fa-calendar-alt"></i>`;
         }
         updateDate();
