@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dev Projects</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             box-sizing: border-box;
@@ -95,20 +96,42 @@
             margin: 10px 0;
             border-top: 1px solid #ddd;
         }
+
+        /* Styles for the back button */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            border: none;
+            border-radius: 50%;
+            background-color: #fff;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+            font-size: 1.5em;
+        }
+
+        .back-button:hover {
+            background-color: #eee;
+        }
     </style>
 </head>
 <body>
+    <button class="back-button" onclick="window.location.href='home.html'"><i class="fas fa-arrow-left"></i></button>
     <div class="widget">
         <i class="fab fa-python python-logo"></i>
         <hr>
-        	
-        <h2 class="module-title">• Python Module •</h2>
+        
+        <h2 class="module-title">• HusBot Module •</h2>
         
         <div id="stats" class="stats">
         </div>
     </div>
-
-    <script src="https://kit.fontawesome.com/8d7b328be6.js" crossorigin="anonymous"></script>
 
     <script>
         async function fetchStats() {
@@ -137,20 +160,17 @@
             const statsDiv = document.getElementById('stats');
             const info = data.info;
 
-            // Clear any existing content
             statsDiv.innerHTML = '';
 
-            // Create buttons for each piece of information
             const buttons = [
-                createInfoButton('Name', info.name),
+                createInfoButton('Install', info.name),
                 createInfoButton('Version', info.version),
                 createInfoButton('Description', info.summary),
                 createInfoButton('Creator', info.author),
-                createInfoButton('License', info.license),
+                createInfoButton('Tutorials', info.license),
                 createInfoButton('Url Module', info.package_url),
             ];
 
-            // Add buttons to the statsDiv
             buttons.forEach(button => statsDiv.appendChild(button));
         }
 
@@ -160,5 +180,6 @@
                 console.error('Error fetching data:', error);
             });
     </script>
+    <script src="https://kit.fontawesome.com/8d7b328be6.js" crossorigin="anonymous"></script>
 </body>
 </html>
