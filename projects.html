@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Projects</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ee7784, #f4f389);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .widget {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .widget h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .info-button {
+            margin: 5px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ee7784;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .info-button:hover {
+            background-color: #FFB400;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .python-logo {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .module-title {
+            font-size: 1.5em;
+            margin: 0;
+            padding: 0;
+        }
+
+        hr {
+            margin: 10px 0;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <i class="fab fa-python python-logo"></i>
+        <hr>
+        	
+        <h2 class="module-title">• Python Module •</h2>
+        
+        <div id="stats" class="stats">
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/8d7b328be6.js" crossorigin="anonymous"></script>
+
+    <script>
+        async function fetchStats() {
+            try {
+                const response = await fetch('https://pypi.org/pypi/husbot/json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('stats').innerHTML = '<p>حدث خطأ أثناء جلب البيانات.</p>';
+            }
+        }
+
+        function createInfoButton(label, info) {
+            const button = document.createElement('button');
+            button.className = 'info-button';
+            button.textContent = label;
+            button.addEventListener('click', () => alert(info));
+            return button;
+        }
+
+        function displayStats(data) {
+            const statsDiv = document.getElementById('stats');
+            const info = data.info;
+
+            // Clear any existing content
+            statsDiv.innerHTML = '';
+
+            // Create buttons for each piece of information
+            const buttons = [
+                createInfoButton('Name', info.name),
+                createInfoButton('Version', info.version),
+                createInfoButton('Description', info.summary),
+                createInfoButton('Creator', info.author),
+                createInfoButton('License', info.license),
+                createInfoButton('Url Module', info.package_url),
+            ];
+
+            // Add buttons to the statsDiv
+            buttons.forEach(button => statsDiv.appendChild(button));
+        }
+
+        fetchStats()
+            .then(data => displayStats(data))
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+</body>
+</html>
