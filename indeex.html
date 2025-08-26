@@ -1,51 +1,35 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Info Page</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#xf015;</text></svg>" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <meta charset="UTF-8">
+  <title>مشغل فيديو</title>
+  <style>
+    body {
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .video-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
-    <div class="gradient-animation">
-        <div class="date-box" id="dateBox">Loading... <i class="fas fa-calendar-alt"></i></div> <!-- Added Font Awesome icon -->
-        <div class="developer-info">
-            <h1>« Hussam.Fa »</h1>
-            <hr>
-            <p>• Python Programmer •</p>
-            <p>• My Age : 17 Years.O •</p>
-            <p>• Nationality  : IRAQ &#127470;&#127478 •</p>
-            <hr> 
-            <div class="social-icons">
-                <a href="https://www.instagram.com/7qf7?igsh=MWdiaWg2bTFzN3Frbw==" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://t.me/t_4_z" target="_blank"><i class="fab fa-telegram"></i></a>
-                <a href="https://github.com/sythontm" target="_blank"><i class="fab fa-github"></i></a>
-            </div>
-        </div>
-        <div class="navigation-box">
-            <a href="home.html" class="nav-button" onclick="scrollToTop()"><i class="fas fa-home"></i></a>
-            <a href="projects.html" class="nav-button"><i class="fas fa-folder-open"></i></a>
-            <a href="game.html" class="nav-button"><i class="fas fa-gamepad"></i></a> <!-- Link to the game.html file -->
-        </div>
-    </div>
-
-    <script>
-        function updateDate() {
-            var now = new Date();
-            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            var formattedDate = now.toLocaleDateString('en-GB', options); 
-            document.getElementById('dateBox').innerHTML = `${formattedDate} <i class="fas fa-calendar-alt"></i>`;
-        }
-        updateDate();
-        setInterval(updateDate, 60000);
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    </script>
-    <script src="https://kit.fontawesome.com/8d7b328be6.js" crossorigin="anonymous"></script>
+  <div class="video-box">
+    <h2 style="text-align:center;">مقطع تجريبي دقيقة</h2>
+    <iframe width="560" height="315" 
+      src="https://www.youtube.com/embed/jNQXAC9IVRw?start=0&end=60" 
+      title="YouTube video player" frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+  </div>
 </body>
 </html>
