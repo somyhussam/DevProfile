@@ -274,6 +274,43 @@
     transition: opacity .15s ease;
   }
   .lang-check.selected{ opacity: 1; }
+
+  /* ===== Toast مؤقت (لا يوجد توست أصلي في Telegram API، لذا صُمم يدويًا بنفس هوية التصميم) ===== */
+  .toast{
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    box-shadow: 0 10px 28px rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 85%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast-icon{
+    color: var(--accent);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .toast-text{
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>
 </head>
 <body>
@@ -425,6 +462,11 @@
 
 </div><!-- /app-wrapper -->
 
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span class="toast-text"></span>
+</div>
+
 <script>
   const tg = window.Telegram?.WebApp;
 
@@ -443,9 +485,19 @@
       is_visible: true
     });
     tg.MainButton.onClick(() => {
-      tg.HapticFeedback.notificationOccurred('success');
-      tg.showAlert('تم الحفظ بنجاح');
+      showToast('تم الحفظ بنجاح');
     });
+  }
+
+  // ===== Toast مؤقت مقترن باهتزاز Telegram API (HapticFeedback) =====
+  let toastTimer;
+  function showToast(message){
+    const toast = document.getElementById('toast');
+    toast.querySelector('.toast-text').textContent = message;
+    toast.classList.add('show');
+    tg?.HapticFeedback?.notificationOccurred('success');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
   }
 
   document.querySelectorAll('.switch input').forEach(sw => {
@@ -455,8 +507,7 @@
   });
 
   document.getElementById('saveBtn').addEventListener('click', () => {
-    tg?.HapticFeedback?.impactOccurred('medium');
-    tg ? tg.showAlert('تم الحفظ بنجاح') : alert('تم الحفظ بنجاح');
+    showToast('تم الحفظ بنجاح');
   });
 
   document.getElementById('shareBtn').addEventListener('click', () => {
@@ -522,8 +573,8 @@
       currentLang = row.dataset.lang;
       langRowHint.textContent = currentLang;
       updateLangChecks();
-      tg?.HapticFeedback?.notificationOccurred('success');
       setTimeout(closeLanguagePage, 180); // إغلاق تلقائي بعد الاختيار كسلوك تيليجرام الطبيعي
+      setTimeout(() => showToast(`تم تغيير اللغة إلى ${currentLang}`), 380); // بعد اكتمال أنيميشن الرجوع
     });
   });
 
