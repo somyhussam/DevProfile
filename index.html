@@ -122,25 +122,23 @@
     min-width: 0;
   }
 
-  .row-avatar{
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
+  .row-icon{
+    width: 26px;
+    height: 26px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    color: #fff;
-    background: var(--separator);
+    font-size: 19px;
+    line-height: 1;
   }
-  .row-avatar.accent{ background: var(--accent); }
-  .row-avatar.danger{ background: rgba(255,69,58,.18); color:#ff453a; }
-  .row-avatar.outline{
-    background: transparent;
-    border: 1.5px solid var(--accent);
-    color: var(--accent);
+  .row-icon img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
+  .row-icon.accent{ color: var(--accent); }
+  .row-icon.danger{ color: #ff453a; }
 
   .row-text{ min-width: 0; }
   .row-label{
@@ -231,7 +229,7 @@
   <div class="card">
     <div class="row" id="notifRow">
       <div class="row-main">
-        <div class="row-avatar accent">🔔</div>
+        <div class="row-icon">🔔</div>
         <div class="row-text">
           <div class="row-label">الإشعارات</div>
           <div class="row-hint">تلقّي تنبيهات فورية</div>
@@ -245,7 +243,7 @@
 
     <div class="row" id="soundRow">
       <div class="row-main">
-        <div class="row-avatar accent">🔊</div>
+        <div class="row-icon">🔊</div>
         <div class="row-text">
           <div class="row-label">الصوت والاهتزاز</div>
         </div>
@@ -258,7 +256,7 @@
 
     <div class="row" id="langRow">
       <div class="row-main">
-        <div class="row-avatar accent">🌐</div>
+        <div class="row-icon"><img src="https://c.top4top.io/p_38546vm5q1.png" alt="اللغة"></div>
         <div class="row-text">
           <div class="row-label">اللغة</div>
           <div class="row-hint">العربية</div>
@@ -274,7 +272,7 @@
   <div class="card">
     <div class="row" id="saveBtn">
       <div class="row-main">
-        <div class="row-avatar outline">＋</div>
+        <div class="row-icon accent">＋</div>
         <div class="row-text">
           <div class="row-label accent">حفظ التغييرات</div>
         </div>
@@ -285,7 +283,7 @@
   <div class="card">
     <div class="row" id="shareBtn">
       <div class="row-main">
-        <div class="row-avatar accent">↗</div>
+        <div class="row-icon">↗</div>
         <div class="row-text">
           <div class="row-label">مشاركة</div>
           <div class="row-hint">إرسال رابط الإعدادات</div>
@@ -296,7 +294,7 @@
 
     <div class="row" id="deleteBtn">
       <div class="row-main">
-        <div class="row-avatar danger">🗑</div>
+        <div class="row-icon danger">🗑</div>
         <div class="row-text">
           <div class="row-label danger">حذف الحساب</div>
         </div>
