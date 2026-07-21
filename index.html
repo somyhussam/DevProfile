@@ -121,7 +121,13 @@
     cursor: pointer;
     margin-top: 10px;
     transition: opacity .15s ease, transform .1s ease;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    outline: none;
+    touch-action: manipulation;
   }
+  .btn:focus{ outline: none; }
   .btn:active{ transform: scale(0.98); opacity: .85; }
 
   .btn-primary{
