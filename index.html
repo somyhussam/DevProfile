@@ -1,35 +1,234 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>مشغل فيديو</title>
-  <style>
-    body {
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .video-box {
-      background: #fff;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>واجهة Telegram Mini App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --accent: #1D976C;
+    --accent-dark: #157553;
+    --bg: #1c1c1e;
+    --card-bg: #2c2c2e;
+    --text: #ffffff;
+    --hint: #8e8e93;
+    --separator: #3a3a3c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px 16px 100px;
+    min-height: 100vh;
+  }
+
+  h1{
+    font-size: 20px;
+    font-weight: 700;
+    margin: 4px 4px 16px;
+  }
+
+  .section-label{
+    font-size: 13px;
+    color: var(--hint);
+    margin: 24px 12px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  /* بطاقة تجمّع الأزرار على طريقة تيليجرام */
+  .card{
+    background: var(--card-bg);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--separator);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .row:last-child{ border-bottom: none; }
+
+  .row-label{
+    font-size: 16px;
+  }
+
+  .row-hint{
+    font-size: 13px;
+    color: var(--hint);
+    margin-top: 2px;
+  }
+
+  /* مفتاح Switch بأسلوب تيليجرام/iOS */
+  .switch{
+    position: relative;
+    width: 51px;
+    height: 31px;
+    flex-shrink: 0;
+  }
+  .switch input{
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .switch-track{
+    position: absolute;
+    inset: 0;
+    background: var(--separator);
+    border-radius: 999px;
+    transition: background .2s ease;
+  }
+  .switch-thumb{
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 27px;
+    height: 27px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,.3);
+    transition: transform .2s ease;
+  }
+  .switch input:checked + .switch-track{
+    background: var(--accent);
+  }
+  .switch input:checked + .switch-track .switch-thumb{
+    transform: translateX(-20px);
+  }
+
+  /* أزرار تعمل كأزرار حقيقية (تشبه المُنسدلة داخل التطبيقات) */
+  .btn{
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: opacity .15s ease, transform .1s ease;
+  }
+  .btn:active{ transform: scale(0.98); opacity: .85; }
+
+  .btn-primary{
+    background: var(--accent);
+    color: #ffffff;
+  }
+  .btn-secondary{
+    background: var(--card-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn-destructive{
+    background: var(--card-bg);
+    color: #ff453a;
+  }
+
+  .chevron{
+    color: var(--hint);
+    font-size: 18px;
+  }
+</style>
 </head>
 <body>
-  <div class="video-box">
-    <h2 style="text-align:center;">مقطع تجريبي دقيقة</h2>
-    <iframe width="560" height="315" 
-      src="https://www.youtube.com/embed/jNQXAC9IVRw?start=0&end=60" 
-      title="YouTube video player" frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-      allowfullscreen>
-    </iframe>
+
+  <h1>الإعدادات</h1>
+
+  <div class="section-label">التفضيلات</div>
+  <div class="card">
+    <div class="row" id="notifRow">
+      <div>
+        <div class="row-label">الإشعارات</div>
+        <div class="row-hint">تلقّي تنبيهات فورية</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="notifSwitch" checked>
+        <span class="switch-track"><span class="switch-thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="row" id="soundRow">
+      <div>
+        <div class="row-label">الصوت والاهتزاز</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="soundSwitch">
+        <span class="switch-track"><span class="switch-thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="row" id="langRow">
+      <div class="row-label">اللغة</div>
+      <span class="chevron">‹</span>
+    </div>
   </div>
+
+  <div class="section-label">إجراءات</div>
+  <button class="btn btn-primary" id="saveBtn">حفظ التغييرات</button>
+  <button class="btn btn-secondary" id="shareBtn">مشاركة</button>
+  <button class="btn btn-destructive" id="deleteBtn">حذف الحساب</button>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+
+  if (tg) {
+    tg.ready();
+    tg.expand();
+
+    // اعتماد لوني ثابت (رمادي غامق + أخضر #1D976C) بصرف النظر عن ثيم المستخدم
+    tg.setHeaderColor('#1c1c1e');
+    tg.setBackgroundColor('#1c1c1e');
+    tg.setBottomBarColor('#1c1c1e');
+
+    // استخدام الزر الرئيسي الأصلي من Telegram API بنفس اللون المطلوب
+    tg.MainButton.setParams({
+      text: 'حفظ التغييرات',
+      color: '#1D976C',
+      text_color: '#ffffff',
+      is_visible: true
+    });
+    tg.MainButton.onClick(() => {
+      tg.HapticFeedback.notificationOccurred('success');
+      tg.showAlert('تم الحفظ بنجاح');
+    });
+  }
+
+  // اهتزاز خفيف عند تبديل أي مفتاح (Haptic Feedback)
+  document.querySelectorAll('.switch input').forEach(sw => {
+    sw.addEventListener('change', () => {
+      tg?.HapticFeedback?.selectionChanged();
+    });
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    tg?.HapticFeedback?.impactOccurred('medium');
+    tg ? tg.showAlert('تم الحفظ بنجاح') : alert('تم الحفظ بنجاح');
+  });
+
+  document.getElementById('shareBtn').addEventListener('click', () => {
+    tg?.HapticFeedback?.impactOccurred('light');
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', () => {
+    if (tg) {
+      tg.showConfirm('هل أنت متأكد من حذف الحساب؟', (ok) => {
+        if (ok) tg.HapticFeedback.notificationOccurred('warning');
+      });
+    } else if (confirm('هل أنت متأكد من حذف الحساب؟')) {
+      // منطق الحذف
+    }
+  });
+</script>
 </body>
 </html>
