@@ -210,9 +210,77 @@
   .switch input:checked + .switch-track .switch-thumb{
     transform: translateX(19px);
   }
+
+  /* ===== نظام التنقل بين الصفحات (أنيميشن شبيه بتيليجرام) ===== */
+  .app-wrapper{
+    position: relative;
+    overflow: hidden;
+  }
+  .view{
+    width: 100%;
+  }
+  .view-main{
+    transition: transform .32s cubic-bezier(.36,.66,.04,1), filter .32s ease;
+  }
+  .view-main.pushed{
+    transform: translateX(24%);
+    filter: brightness(.6);
+  }
+  .view-sub{
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    padding: 24px 16px 100px;
+    transform: translateX(-100%);
+    transition: transform .32s cubic-bezier(.36,.66,.04,1);
+    z-index: 5;
+  }
+  .view-sub.active{
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(0,0,0,.35);
+  }
+
+  .nav-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 4px 20px;
+  }
+  .nav-back{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .nav-back .chevron-back{ font-size: 20px; }
+  .nav-title{
+    font-size: 18px;
+    font-weight: 800;
+    flex: 1;
+    text-align: center;
+    margin-right: 26px;
+  }
+
+  .lang-check{
+    color: var(--accent);
+    font-size: 18px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+  .lang-check.selected{ opacity: 1; }
 </style>
 </head>
 <body>
+
+<div class="app-wrapper">
+
+  <div class="view view-main" id="mainView">
 
   <!-- رأس البطاقة التعريفية -->
   <div class="profile">
@@ -260,7 +328,7 @@
       </label>
     </div>
 
-    <div class="row" id="langRow">
+    <div class="row" id="langRow" onclick="openLanguagePage()">
       <div class="row-main">
         <div class="row-icon"><img src="https://c.top4top.io/p_38546vm5q1.png" alt="اللغة" draggable="false" oncontextmenu="return false"></div>
         <div class="row-text">
@@ -308,6 +376,54 @@
       <span class="chevron">‹</span>
     </div>
   </div>
+
+  </div><!-- /view-main -->
+
+  <!-- صفحة اللغة الفرعية -->
+  <div class="view view-sub" id="languageView">
+    <div class="nav-header">
+      <div class="nav-back" onclick="closeLanguagePage()">
+        <span class="chevron-back">‹</span>
+        <span>رجوع</span>
+      </div>
+      <div class="nav-title">اللغة</div>
+    </div>
+
+    <div class="card" id="langList">
+      <div class="row" data-lang="العربية">
+        <div class="row-main">
+          <div class="row-text"><div class="row-label">العربية</div></div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+      <div class="row" data-lang="English">
+        <div class="row-main">
+          <div class="row-text"><div class="row-label">English</div></div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+      <div class="row" data-lang="Français">
+        <div class="row-main">
+          <div class="row-text"><div class="row-label">Français</div></div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+      <div class="row" data-lang="Türkçe">
+        <div class="row-main">
+          <div class="row-text"><div class="row-label">Türkçe</div></div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+      <div class="row" data-lang="Español">
+        <div class="row-main">
+          <div class="row-text"><div class="row-label">Español</div></div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-wrapper -->
 
 <script>
   const tg = window.Telegram?.WebApp;
@@ -364,6 +480,54 @@
   document.addEventListener('dragstart', (e) => {
     if (e.target.closest('.row-icon')) e.preventDefault();
   });
+
+  // ===== التنقل إلى صفحة اللغة بأنيميشن Push شبيه بتيليجرام =====
+  const mainView = document.getElementById('mainView');
+  const languageView = document.getElementById('languageView');
+  const langRowHint = document.querySelector('#langRow .row-hint');
+  let currentLang = langRowHint.textContent;
+
+  function openLanguagePage(){
+    mainView.classList.add('pushed');
+    languageView.classList.add('active');
+    updateLangChecks();
+    tg?.HapticFeedback?.impactOccurred('light');
+
+    // استخدام BackButton الأصلي من Telegram API بدل زر رجوع مخصص عند التشغيل داخل تيليجرام
+    if (tg) {
+      tg.BackButton.show();
+      tg.MainButton.hide();
+    }
+  }
+
+  function closeLanguagePage(){
+    mainView.classList.remove('pushed');
+    languageView.classList.remove('active');
+    tg?.HapticFeedback?.impactOccurred('light');
+
+    if (tg) {
+      tg.BackButton.hide();
+      tg.MainButton.show();
+    }
+  }
+
+  function updateLangChecks(){
+    document.querySelectorAll('#langList .row').forEach(row => {
+      row.querySelector('.lang-check').classList.toggle('selected', row.dataset.lang === currentLang);
+    });
+  }
+
+  document.querySelectorAll('#langList .row').forEach(row => {
+    row.addEventListener('click', () => {
+      currentLang = row.dataset.lang;
+      langRowHint.textContent = currentLang;
+      updateLangChecks();
+      tg?.HapticFeedback?.notificationOccurred('success');
+      setTimeout(closeLanguagePage, 180); // إغلاق تلقائي بعد الاختيار كسلوك تيليجرام الطبيعي
+    });
+  });
+
+  tg?.BackButton?.onClick(closeLanguagePage);
 </script>
 </body>
 </html>
