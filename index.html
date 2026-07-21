@@ -86,6 +86,7 @@
     inset: 0;
     background: var(--separator);
     border-radius: 999px;
+    overflow: hidden;
     transition: background .2s ease;
   }
   .switch-thumb{
@@ -98,25 +99,27 @@
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0,0,0,.3);
     transition: transform .2s ease;
+    will-change: transform;
   }
   .switch input:checked + .switch-track{
     background: var(--accent);
   }
+  /* عند التفعيل تتحرك الكرة نحو اليمين (اتجاه صحيح مع تصميم RTL) */
   .switch input:checked + .switch-track .switch-thumb{
-    transform: translateX(-20px);
+    transform: translateX(20px);
   }
 
-  /* أزرار تعمل كأزرار حقيقية (تشبه المُنسدلة داخل التطبيقات) */
+  /* أزرار تعمل كأزرار حقيقية (تشبه المُنسدلة داخل التطبيقات) — بحجم أنحف واحترافي */
   .btn{
     display: block;
     width: 100%;
     border: none;
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 16px;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 12px;
+    margin-top: 10px;
     transition: opacity .15s ease, transform .1s ease;
   }
   .btn:active{ transform: scale(0.98); opacity: .85; }
