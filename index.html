@@ -136,6 +136,12 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
   }
   .row-icon.accent{ color: var(--accent); }
   .row-icon.danger{ color: #ff453a; }
@@ -256,7 +262,7 @@
 
     <div class="row" id="langRow">
       <div class="row-main">
-        <div class="row-icon"><img src="https://c.top4top.io/p_38546vm5q1.png" alt="اللغة"></div>
+        <div class="row-icon"><img src="https://c.top4top.io/p_38546vm5q1.png" alt="اللغة" draggable="false" oncontextmenu="return false"></div>
         <div class="row-text">
           <div class="row-label">اللغة</div>
           <div class="row-hint">العربية</div>
@@ -349,6 +355,14 @@
     } else if (confirm('هل أنت متأكد من حذف الحساب؟')) {
       // منطق الحذف
     }
+  });
+
+  // منع نسخ/حفظ أي صورة إيموجي تُستخدم داخل الصفوف (حالية أو تُضاف لاحقًا)
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.row-icon')) e.preventDefault();
+  });
+  document.addEventListener('dragstart', (e) => {
+    if (e.target.closest('.row-icon')) e.preventDefault();
   });
 </script>
 </body>
