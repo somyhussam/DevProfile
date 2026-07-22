@@ -135,7 +135,10 @@
   /* ===== نافذة إدخال الرمز السري ===== */
   .pin-modal{
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0,0,0,.8);
     display: flex;
     align-items: flex-end;
@@ -143,11 +146,14 @@
     z-index: 9998;
     opacity: 1;
     transition: opacity .3s ease;
+    visibility: visible;
   }
 
   .pin-modal.hidden{
+    display: none;
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
   }
 
   .pin-sheet{
@@ -912,8 +918,18 @@
       biometricBtn.style.display = 'none';
     }
 
-    biometricBtn.addEventListener('click', attemptBiometric);
-    pinBtn.addEventListener('click', openPinModal);
+    // ربط الأزرار
+    if (biometricBtn) {
+      biometricBtn.addEventListener('click', attemptBiometric);
+    }
+    
+    if (pinBtn) {
+      pinBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openPinModal();
+      });
+    }
     
     tg?.HapticFeedback?.selectionChanged();
   }
@@ -962,20 +978,30 @@
 
   // ===== فتح نافذة الرمز السري =====
   function openPinModal(){
+    console.log('فتح نافذة الرمز السري');
     const pinModal = document.getElementById('pinModal');
-    pinModal.classList.remove('hidden');
-    buildPinKeyboard();
-    clearPinInputs();
-    document.getElementById('pinError').textContent = '';
-    tg?.HapticFeedback?.selectionChanged();
+    if (pinModal) {
+      pinModal.classList.remove('hidden');
+      buildPinKeyboard();
+      clearPinInputs();
+      document.getElementById('pinError').textContent = '';
+      tg?.HapticFeedback?.selectionChanged();
+      console.log('تم فتح النافذة بنجاح');
+    } else {
+      console.error('لم يتم العثور على عنصر pinModal');
+    }
   }
 
   // ===== إغلاق نافذة الرمز السري =====
   function closePinModal(){
+    console.log('إغلاق نافذة الرمز السري');
     const pinModal = document.getElementById('pinModal');
-    pinModal.classList.add('hidden');
-    clearPinInputs();
-    document.getElementById('pinError').textContent = '';
+    if (pinModal) {
+      pinModal.classList.add('hidden');
+      clearPinInputs();
+      document.getElementById('pinError').textContent = '';
+      console.log('تم إغلاق النافذة بنجاح');
+    }
   }
 
   // ===== بناء لوحة المفاتيح الرقمية =====
@@ -985,25 +1011,37 @@
 
     for (let i = 1; i <= 9; i++) {
       const btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'pin-key';
       btn.textContent = i;
-      btn.onclick = () => addPinDigit(i);
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        addPinDigit(i);
+      });
       keyboard.appendChild(btn);
     }
 
     // زر 0
     const zeroBtn = document.createElement('button');
+    zeroBtn.type = 'button';
     zeroBtn.className = 'pin-key';
     zeroBtn.textContent = '0';
     zeroBtn.style.gridColumn = '2';
-    zeroBtn.onclick = () => addPinDigit(0);
+    zeroBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      addPinDigit(0);
+    });
     keyboard.appendChild(zeroBtn);
 
     // زر الحذف
     const delBtn = document.createElement('button');
+    delBtn.type = 'button';
     delBtn.className = 'pin-key delete';
     delBtn.innerHTML = '⌫';
-    delBtn.onclick = deletePinDigit;
+    delBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      deletePinDigit();
+    });
     keyboard.appendChild(delBtn);
   }
 
@@ -1015,10 +1053,11 @@
         input.value = digit;
         input.classList.add('filled');
         tg?.HapticFeedback?.selectionChanged();
+        updatePinConfirmButton();
         
         // التحقق التلقائي عند إدخال 4 أرقام
         if (isPinComplete()) {
-          verifyPin();
+          setTimeout(verifyPin, 300);
         }
         return;
       }
@@ -1033,9 +1072,16 @@
         inputs[i].value = '';
         inputs[i].classList.remove('filled');
         tg?.HapticFeedback?.selectionChanged();
+        updatePinConfirmButton();
         return;
       }
     }
+  }
+
+  // ===== تحديث حالة زر التأكيد =====
+  function updatePinConfirmButton(){
+    const confirmBtn = document.getElementById('pinConfirmBtn');
+    confirmBtn.disabled = !isPinComplete();
   }
 
   // ===== مسح جميع المدخلات =====
@@ -1177,10 +1223,24 @@
     });
 
     // حدث إلغاء الرمز السري
-    document.getElementById('pinCancelBtn').addEventListener('click', closePinModal);
+    const pinCancelBtn = document.getElementById('pinCancelBtn');
+    if (pinCancelBtn) {
+      pinCancelBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        closePinModal();
+      });
+    }
 
     // زر تأكيد الرمز السري
-    document.getElementById('pinConfirmBtn').addEventListener('click', verifyPin);
+    const pinConfirmBtn = document.getElementById('pinConfirmBtn');
+    if (pinConfirmBtn) {
+      pinConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (isPinComplete()) {
+          verifyPin();
+        }
+      });
+    }
   }
 
   // ===== جلب صورة المستخدم =====
@@ -1261,7 +1321,17 @@
   tg?.BackButton?.onClick(closeLanguagePage);
 
   // ===== بدء التطبيق =====
-  initAuth();
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('تم تحميل الصفحة - بدء المصادقة');
+    initAuth();
+  });
+
+  // تشغيل فوري إذا كانت الصفحة جاهزة
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuth);
+  } else {
+    setTimeout(initAuth, 100);
+  }
 </script>
 </body>
 </html>
