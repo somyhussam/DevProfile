@@ -290,6 +290,39 @@
   }
   .lang-check.selected{ opacity: 1; }
 
+  /* ===== بطاقة التفضيلات: نفس عرض وارتفاع حقل البحث، بحجم أصغر لكل صف ===== */
+  .card-compact{
+    margin: 0 4px;
+  }
+  .card-compact .row{
+    padding: 11px 14px;
+  }
+  .card-compact .row-icon{
+    width: 20px;
+    height: 20px;
+    font-size: 15px;
+  }
+  .card-compact .row-label{
+    font-size: 13.5px;
+  }
+  .card-compact .row-hint{
+    font-size: 11px;
+  }
+  .card-compact .chevron{
+    font-size: 15px;
+  }
+  .card-compact .switch{
+    width: 40px;
+    height: 24px;
+  }
+  .card-compact .switch-thumb{
+    width: 20px;
+    height: 20px;
+  }
+  .card-compact .switch input:checked + .switch-track .switch-thumb{
+    transform: translateX(16px);
+  }
+
   /* ===== Toast مؤقت — تصميم زجاجي أسطواني (Liquid Glass) ===== */
   .toast{
     position: fixed;
@@ -371,7 +404,7 @@
 
   <!-- التفضيلات -->
   <div class="section-label">التفضيلات</div>
-  <div class="card">
+  <div class="card card-compact" id="prefCard">
     <div class="row" id="notifRow">
       <div class="row-main">
         <div class="row-icon">🔔</div>
