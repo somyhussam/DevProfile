@@ -470,6 +470,17 @@
       <span class="chevron">‹</span>
     </div>
 
+    <div class="row" id="shareStoryBtn">
+      <div class="row-main">
+        <div class="row-icon">📖</div>
+        <div class="row-text">
+          <div class="row-label">مشاركة كقصة</div>
+          <div class="row-hint">نشر على قصتك في تيليجرام</div>
+        </div>
+      </div>
+      <span class="chevron">‹</span>
+    </div>
+
     <div class="row" id="deleteBtn">
       <div class="row-main">
         <div class="row-icon danger">🗑</div>
@@ -603,6 +614,27 @@
 
   document.getElementById('shareBtn').addEventListener('click', () => {
     tg?.HapticFeedback?.impactOccurred('light');
+  });
+
+  // ===== مشاركة كقصة عبر Telegram API (shareToStory) =====
+  document.getElementById('shareStoryBtn').addEventListener('click', () => {
+    if (!tg || !tg.shareToStory) {
+      showToast('مشاركة القصص متاحة فقط داخل تطبيق تيليجرام');
+      return;
+    }
+
+    // استبدل الرابط برابط صورة/فيديو فعلي (يجب أن يكون HTTPS) تريد نشره كقصة
+    const mediaUrl = 'https://example.com/story-image.jpg';
+
+    tg.shareToStory(mediaUrl, {
+      text: 'جرّب هذا التطبيق المصغّر 🚀',
+      widget_link: {
+        url: 'https://t.me/YourBotUsername/YourAppName',
+        name: 'فتح التطبيق'
+      }
+    });
+
+    tg.HapticFeedback.impactOccurred('medium');
   });
 
   document.getElementById('deleteBtn').addEventListener('click', () => {
