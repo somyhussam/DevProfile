@@ -880,24 +880,61 @@
   let biometricAvailable = false;
   let isAuthenticated = false;
 
-  // ===== التحقق من دعم البصمة =====
+  // ===== تهيئة Telegram WebApp =====
+  if (tg) {
+    console.log('Telegram WebApp جاهز');
+    tg.ready();
+    
+    // تهيئة BiometricManager إذا كان متاحاً
+    const biometricManager = tg.BiometricManager;
+    if (biometricManager) {
+      console.log('BiometricManager متاح');
+      biometricManager.init();
+      console.log('تم تهيئة BiometricManager');
+      console.log('البصمة متاحة:', biometricManager.isBiometricAvailable);
+      console.log('نوع البصمة:', biometricManager.biometricType);
+      
+      // الاستماع لأحداث BiometricManager
+      tg.onEvent('biometricManagerUpdated', function() {
+        console.log('تم تحديث BiometricManager:', {
+          available: biometricManager.isBiometricAvailable,
+          type: biometricManager.biometricType,
+          accessGranted: biometricManager.isAccessGranted
+        });
+      });
+    } else {
+      console.log('BiometricManager غير متاح');
+    }
+  } else {
+    console.log('Telegram WebApp غير متاح - قد تكون خارج تطبيق تيليجرام');
+  }
+
+  // ===== التحقق من دعم البصمة باستخدام Telegram API =====
   async function checkBiometricAvailability(){
-    if (window.PublicKeyCredential === undefined || window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === undefined) {
+    const biometricManager = tg?.BiometricManager;
+    
+    if (!biometricManager) {
       return false;
     }
     
-    try {
-      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      return available;
-    } catch (err) {
-      console.log('خطأ في التحقق من البصمة:', err);
-      return false;
-    }
+    // تهيئة BiometricManager
+    biometricManager.init();
+    
+    return biometricManager.isBiometricAvailable;
   }
 
   // ===== تهيئة واجهة المصادقة =====
   async function initAuth(){
-    biometricAvailable = await checkBiometricAvailability();
+    const biometricManager = tg?.BiometricManager;
+    
+    // التحقق من توفر البصمة
+    if (biometricManager && biometricManager.isBiometricAvailable) {
+      biometricAvailable = true;
+      console.log('البصمة متاحة - النوع:', biometricManager.biometricType);
+    } else {
+      biometricAvailable = false;
+      console.log('البصمة غير متاحة');
+    }
     
     const authScreen = document.getElementById('authScreen');
     const biometricBtn = document.getElementById('biometricBtn');
@@ -907,10 +944,12 @@
     const authSubtitle = document.getElementById('authSubtitle');
 
     if (biometricAvailable) {
+      const biometricType = biometricManager.biometricType || 'بصمة';
       authIcon.textContent = '👆';
       authTitle.textContent = 'المصادقة البيومترية';
-      authSubtitle.textContent = 'ضع بصمتك أو وجهك للمتابعة';
-      biometricBtn.textContent = 'استخدم البصمة';
+      authSubtitle.textContent = `استخدم ${biometricType} الخاص بك للمتابعة`;
+      biometricBtn.textContent = `استخدم ${biometricType}`;
+      biometricBtn.style.display = 'block';
     } else {
       authIcon.textContent = '🔐';
       authTitle.textContent = 'الرمز السري';
@@ -920,60 +959,86 @@
 
     // ربط الأزرار
     if (biometricBtn) {
+      biometricBtn.removeEventListener('click', attemptBiometric);
       biometricBtn.addEventListener('click', attemptBiometric);
     }
     
     if (pinBtn) {
-      pinBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        openPinModal();
-      });
+      pinBtn.removeEventListener('click', openPinModalHandler);
+      pinBtn.addEventListener('click', openPinModalHandler);
     }
     
     tg?.HapticFeedback?.selectionChanged();
   }
 
-  // ===== محاولة المصادقة البيومترية =====
-  async function attemptBiometric(){
+  // دالة منفصلة لمعالج فتح نافذة الرمز السري
+  function openPinModalHandler(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    openPinModal();
+  }
+
+  // ===== محاولة المصادقة البيومترية باستخدام Telegram API =====
+  function attemptBiometric(){
     if (!biometricAvailable) {
       openPinModal();
       return;
     }
 
     const biometricBtn = document.getElementById('biometricBtn');
+    const biometricManager = tg?.BiometricManager;
+
+    if (!biometricManager) {
+      showToast('البصمة غير متاحة في هذا الإصدار');
+      openPinModal();
+      return;
+    }
+
     biometricBtn.disabled = true;
     biometricBtn.textContent = 'جاري المعالجة...';
 
-    try {
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-
-      const assertion = await navigator.credentials.get({
-        publicKey: {
-          challenge: challenge,
-          timeout: 60000,
-          userVerification: "preferred",
-          rpId: window.location.hostname
+    // طلب الوصول للبصمة إذا لم يتم طلبه من قبل
+    if (!biometricManager.isAccessGranted && !biometricManager.isAccessRequested) {
+      biometricManager.requestAccess(
+        {reason: 'يلزم التحقق البيومتري للدخول إلى التطبيق'},
+        function(access_granted) {
+          if (access_granted) {
+            performBiometricAuth(biometricBtn, biometricManager);
+          } else {
+            showToast('تم رفض إذن البصمة');
+            biometricBtn.disabled = false;
+            biometricBtn.textContent = 'استخدم البصمة';
+            tg?.HapticFeedback?.notificationOccurred('error');
+          }
         }
-      });
-
-      if (assertion) {
-        // نجحت المصادقة البيومترية
-        completeAuthentication('المصادقة البيومترية');
-      } else {
-        throw new Error('فشلت المصادقة البيومترية');
-      }
-    } catch (err) {
-      console.log('خطأ البصمة:', err.message);
-      tg?.HapticFeedback?.notificationOccurred('error');
-      biometricBtn.disabled = false;
-      biometricBtn.textContent = 'استخدم البصمة';
-      
-      if (err.name !== 'NotAllowedError') {
-        showToast('فشلت البصمة، حاول مرة أخرى');
-      }
+      );
+    } else {
+      performBiometricAuth(biometricBtn, biometricManager);
     }
+  }
+
+  // ===== تنفيذ المصادقة البيومترية =====
+  function performBiometricAuth(biometricBtn, biometricManager){
+    console.log('بدء المصادقة البيومترية...');
+    
+    biometricManager.authenticate(
+      {reason: 'يرجى التحقق عبر البصمة للمتابعة'},
+      function(success, token) {
+        console.log('نتيجة المصادقة البيومترية:', {success, hasToken: !!token});
+        
+        biometricBtn.disabled = false;
+        
+        if (success) {
+          console.log('نجحت المصادقة البيومترية');
+          completeAuthentication('البصمة');
+        } else {
+          console.log('فشلت المصادقة البيومترية');
+          showToast('فشلت المصادقة البيومترية');
+          biometricBtn.textContent = 'استخدم البصمة';
+          tg?.HapticFeedback?.notificationOccurred('error');
+        }
+      }
+    );
   }
 
   // ===== فتح نافذة الرمز السري =====
@@ -1323,14 +1388,16 @@
   // ===== بدء التطبيق =====
   document.addEventListener('DOMContentLoaded', function() {
     console.log('تم تحميل الصفحة - بدء المصادقة');
-    initAuth();
+    setTimeout(initAuth, 300); // تأخير قليل للتأكد من تهيئة BiometricManager
   });
 
   // تشغيل فوري إذا كانت الصفحة جاهزة
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAuth);
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(initAuth, 300);
+    });
   } else {
-    setTimeout(initAuth, 100);
+    setTimeout(initAuth, 300);
   }
 </script>
 </body>
