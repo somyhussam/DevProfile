@@ -45,7 +45,21 @@
     align-items: center;
     justify-content: center;
     font-size: 38px;
+    font-weight: 800;
+    color: #fff;
     box-shadow: 0 10px 28px rgba(29,151,108,.35);
+    overflow: hidden;
+  }
+  .avatar-lg img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
   }
   .profile h1{
     font-size: 21px;
@@ -340,7 +354,7 @@
 
   <!-- رأس البطاقة التعريفية -->
   <div class="profile">
-    <div class="avatar-lg">⚙️</div>
+    <div class="avatar-lg" id="avatarLg">⚙️</div>
     <h1>الإعدادات</h1>
     <p class="profile-desc">تحكّم في تفضيلاتك وإدارة إشعاراتك وحسابك من هنا. <a href="#">مزيد</a></p>
   </div>
@@ -506,6 +520,24 @@
     tg.MainButton.onClick(() => {
       showToast('تم الحفظ بنجاح');
     });
+
+    // جلب صورة المستخدم من Telegram API ووضعها بدل الدائرة العلوية
+    loadUserAvatar();
+  }
+
+  // ===== جلب صورة المستخدم من initDataUnsafe (Telegram API) =====
+  function loadUserAvatar(){
+    const avatarEl = document.getElementById('avatarLg');
+    const user = tg?.initDataUnsafe?.user;
+
+    if (user?.photo_url) {
+      // المستخدم يملك صورة عامة ومتاحة حسب إعدادات الخصوصية
+      avatarEl.innerHTML = `<img src="${user.photo_url}" alt="${user.first_name || 'صورة المستخدم'}" draggable="false" oncontextmenu="return false">`;
+    } else if (user?.first_name) {
+      // لا توجد صورة (خصوصية المستخدم تمنعها) → عرض الحرف الأول من الاسم بدل الإيموجي
+      avatarEl.textContent = user.first_name.trim().charAt(0).toUpperCase();
+    }
+    // إن لم تتوفر initDataUnsafe إطلاقًا (تشغيل خارج تيليجرام) تبقى أيقونة ⚙️ الافتراضية
   }
 
   // ===== Toast مؤقت مقترن باهتزاز Telegram API (HapticFeedback) =====
