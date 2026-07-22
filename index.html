@@ -355,7 +355,7 @@
   <!-- رأس البطاقة التعريفية -->
   <div class="profile">
     <div class="avatar-lg" id="avatarLg">⚙️</div>
-    <h1>الإعدادات</h1>
+    <h1 id="pageTitle">الإعدادات</h1>
     <p class="profile-desc">تحكّم في تفضيلاتك وإدارة إشعاراتك وحسابك من هنا. <a href="#">مزيد</a></p>
   </div>
 
@@ -525,19 +525,25 @@
     loadUserAvatar();
   }
 
-  // ===== جلب صورة المستخدم من initDataUnsafe (Telegram API) =====
+  // ===== جلب صورة واسم المستخدم من initDataUnsafe (Telegram API) =====
   function loadUserAvatar(){
     const avatarEl = document.getElementById('avatarLg');
+    const titleEl = document.getElementById('pageTitle');
     const user = tg?.initDataUnsafe?.user;
 
-    if (user?.photo_url) {
+    if (!user) return; // تشغيل خارج تيليجرام → تبقى القيم الافتراضية (⚙️ + الإعدادات)
+
+    if (user.photo_url) {
       // المستخدم يملك صورة عامة ومتاحة حسب إعدادات الخصوصية
       avatarEl.innerHTML = `<img src="${user.photo_url}" alt="${user.first_name || 'صورة المستخدم'}" draggable="false" oncontextmenu="return false">`;
-    } else if (user?.first_name) {
+    } else if (user.first_name) {
       // لا توجد صورة (خصوصية المستخدم تمنعها) → عرض الحرف الأول من الاسم بدل الإيموجي
       avatarEl.textContent = user.first_name.trim().charAt(0).toUpperCase();
     }
-    // إن لم تتوفر initDataUnsafe إطلاقًا (تشغيل خارج تيليجرام) تبقى أيقونة ⚙️ الافتراضية
+
+    if (user.first_name) {
+      titleEl.textContent = `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}`;
+    }
   }
 
   // ===== Toast مؤقت مقترن باهتزاز Telegram API (HapticFeedback) =====
