@@ -140,12 +140,17 @@
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,.8);
-    display: flex;
+    display: none;
     align-items: flex-end;
     padding: 0;
-    z-index: 9998;
+    z-index: 10000;
     opacity: 1;
     transition: opacity .3s ease;
+    visibility: visible;
+  }
+
+  .pin-modal.show{
+    display: flex;
     visibility: visible;
   }
 
@@ -678,15 +683,14 @@
 <div class="auth-screen" id="authScreen">
   <div class="auth-container">
     <div class="biometric-icon" id="biometricIcon">👆</div>
-    <h1 class="auth-title" id="authTitle">المصادقة البيومترية</h1>
-    <p class="auth-subtitle" id="authSubtitle">ضع بصمتك للمتابعة</p>
-    <button class="auth-button" id="biometricBtn">استخدم البصمة</button>
-    <button class="auth-button secondary" id="pinBtn">استخدم الرمز السري</button>
+    <h1 class="auth-title" id="authTitle">جاري التحقق البيومتري...</h1>
+    <p class="auth-subtitle" id="authSubtitle">يرجى الانتظار</p>
+    <button class="auth-button secondary" id="pinBtn" style="display: none;">استخدام الرمز السري</button>
   </div>
 </div>
 
 <!-- ===== نافذة إدخال الرمز السري ===== -->
-<div class="pin-modal hidden" id="pinModal">
+<div class="pin-modal" id="pinModal">
   <div class="pin-sheet">
     <div class="pin-header">
       <h2>الرمز السري</h2>
@@ -876,197 +880,30 @@
 
 <script>
   const tg = window.Telegram?.WebApp;
-  const DEFAULT_PIN = "1234"; // الرمز السري الافتراضي — يمكن تغييره
+  const DEFAULT_PIN = "1234";
   let biometricAvailable = false;
   let isAuthenticated = false;
 
-  // ===== تهيئة Telegram WebApp =====
   if (tg) {
-    console.log('Telegram WebApp جاهز');
     tg.ready();
-    
-    // تهيئة BiometricManager إذا كان متاحاً
-    const biometricManager = tg.BiometricManager;
-    if (biometricManager) {
-      console.log('BiometricManager متاح');
-      biometricManager.init();
-      console.log('تم تهيئة BiometricManager');
-      console.log('البصمة متاحة:', biometricManager.isBiometricAvailable);
-      console.log('نوع البصمة:', biometricManager.biometricType);
-      
-      // الاستماع لأحداث BiometricManager
-      tg.onEvent('biometricManagerUpdated', function() {
-        console.log('تم تحديث BiometricManager:', {
-          available: biometricManager.isBiometricAvailable,
-          type: biometricManager.biometricType,
-          accessGranted: biometricManager.isAccessGranted
-        });
-      });
-    } else {
-      console.log('BiometricManager غير متاح');
-    }
-  } else {
-    console.log('Telegram WebApp غير متاح - قد تكون خارج تطبيق تيليجرام');
-  }
-
-  // ===== التحقق من دعم البصمة باستخدام Telegram API =====
-  async function checkBiometricAvailability(){
-    const biometricManager = tg?.BiometricManager;
-    
-    if (!biometricManager) {
-      return false;
-    }
-    
-    // تهيئة BiometricManager
-    biometricManager.init();
-    
-    return biometricManager.isBiometricAvailable;
-  }
-
-  // ===== تهيئة واجهة المصادقة =====
-  async function initAuth(){
-    const biometricManager = tg?.BiometricManager;
-    
-    // التحقق من توفر البصمة
-    if (biometricManager && biometricManager.isBiometricAvailable) {
-      biometricAvailable = true;
-      console.log('البصمة متاحة - النوع:', biometricManager.biometricType);
-    } else {
-      biometricAvailable = false;
-      console.log('البصمة غير متاحة');
-    }
-    
-    const authScreen = document.getElementById('authScreen');
-    const biometricBtn = document.getElementById('biometricBtn');
-    const pinBtn = document.getElementById('pinBtn');
-    const authIcon = document.getElementById('biometricIcon');
-    const authTitle = document.getElementById('authTitle');
-    const authSubtitle = document.getElementById('authSubtitle');
-
-    if (biometricAvailable) {
-      const biometricType = biometricManager.biometricType || 'بصمة';
-      authIcon.textContent = '👆';
-      authTitle.textContent = 'المصادقة البيومترية';
-      authSubtitle.textContent = `استخدم ${biometricType} الخاص بك للمتابعة`;
-      biometricBtn.textContent = `استخدم ${biometricType}`;
-      biometricBtn.style.display = 'block';
-    } else {
-      authIcon.textContent = '🔐';
-      authTitle.textContent = 'الرمز السري';
-      authSubtitle.textContent = 'أدخل الرمز السري الخاص بك';
-      biometricBtn.style.display = 'none';
-    }
-
-    // ربط الأزرار
-    if (biometricBtn) {
-      biometricBtn.removeEventListener('click', attemptBiometric);
-      biometricBtn.addEventListener('click', attemptBiometric);
-    }
-    
-    if (pinBtn) {
-      pinBtn.removeEventListener('click', openPinModalHandler);
-      pinBtn.addEventListener('click', openPinModalHandler);
-    }
-    
-    tg?.HapticFeedback?.selectionChanged();
-  }
-
-  // دالة منفصلة لمعالج فتح نافذة الرمز السري
-  function openPinModalHandler(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    openPinModal();
-  }
-
-  // ===== محاولة المصادقة البيومترية باستخدام Telegram API =====
-  function attemptBiometric(){
-    if (!biometricAvailable) {
-      openPinModal();
-      return;
-    }
-
-    const biometricBtn = document.getElementById('biometricBtn');
-    const biometricManager = tg?.BiometricManager;
-
-    if (!biometricManager) {
-      showToast('البصمة غير متاحة في هذا الإصدار');
-      openPinModal();
-      return;
-    }
-
-    biometricBtn.disabled = true;
-    biometricBtn.textContent = 'جاري المعالجة...';
-
-    // طلب الوصول للبصمة إذا لم يتم طلبه من قبل
-    if (!biometricManager.isAccessGranted && !biometricManager.isAccessRequested) {
-      biometricManager.requestAccess(
-        {reason: 'يلزم التحقق البيومتري للدخول إلى التطبيق'},
-        function(access_granted) {
-          if (access_granted) {
-            performBiometricAuth(biometricBtn, biometricManager);
-          } else {
-            showToast('تم رفض إذن البصمة');
-            biometricBtn.disabled = false;
-            biometricBtn.textContent = 'استخدم البصمة';
-            tg?.HapticFeedback?.notificationOccurred('error');
-          }
-        }
-      );
-    } else {
-      performBiometricAuth(biometricBtn, biometricManager);
-    }
-  }
-
-  // ===== تنفيذ المصادقة البيومترية =====
-  function performBiometricAuth(biometricBtn, biometricManager){
-    console.log('بدء المصادقة البيومترية...');
-    
-    biometricManager.authenticate(
-      {reason: 'يرجى التحقق عبر البصمة للمتابعة'},
-      function(success, token) {
-        console.log('نتيجة المصادقة البيومترية:', {success, hasToken: !!token});
-        
-        biometricBtn.disabled = false;
-        
-        if (success) {
-          console.log('نجحت المصادقة البيومترية');
-          completeAuthentication('البصمة');
-        } else {
-          console.log('فشلت المصادقة البيومترية');
-          showToast('فشلت المصادقة البيومترية');
-          biometricBtn.textContent = 'استخدم البصمة';
-          tg?.HapticFeedback?.notificationOccurred('error');
-        }
-      }
-    );
   }
 
   // ===== فتح نافذة الرمز السري =====
   function openPinModal(){
-    console.log('فتح نافذة الرمز السري');
     const pinModal = document.getElementById('pinModal');
-    if (pinModal) {
-      pinModal.classList.remove('hidden');
-      buildPinKeyboard();
-      clearPinInputs();
-      document.getElementById('pinError').textContent = '';
-      tg?.HapticFeedback?.selectionChanged();
-      console.log('تم فتح النافذة بنجاح');
-    } else {
-      console.error('لم يتم العثور على عنصر pinModal');
-    }
+    pinModal.classList.add('show');
+    buildPinKeyboard();
+    clearPinInputs();
+    document.getElementById('pinError').textContent = '';
+    tg?.HapticFeedback?.selectionChanged();
   }
 
   // ===== إغلاق نافذة الرمز السري =====
   function closePinModal(){
-    console.log('إغلاق نافذة الرمز السري');
     const pinModal = document.getElementById('pinModal');
-    if (pinModal) {
-      pinModal.classList.add('hidden');
-      clearPinInputs();
-      document.getElementById('pinError').textContent = '';
-      console.log('تم إغلاق النافذة بنجاح');
-    }
+    pinModal.classList.remove('show');
+    clearPinInputs();
+    document.getElementById('pinError').textContent = '';
   }
 
   // ===== بناء لوحة المفاتيح الرقمية =====
@@ -1086,7 +923,6 @@
       keyboard.appendChild(btn);
     }
 
-    // زر 0
     const zeroBtn = document.createElement('button');
     zeroBtn.type = 'button';
     zeroBtn.className = 'pin-key';
@@ -1098,7 +934,6 @@
     });
     keyboard.appendChild(zeroBtn);
 
-    // زر الحذف
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'pin-key delete';
@@ -1120,7 +955,6 @@
         tg?.HapticFeedback?.selectionChanged();
         updatePinConfirmButton();
         
-        // التحقق التلقائي عند إدخال 4 أرقام
         if (isPinComplete()) {
           setTimeout(verifyPin, 300);
         }
@@ -1155,7 +989,7 @@
       input.value = '';
       input.classList.remove('filled', 'error');
     });
-    document.getElementById('pinConfirmBtn').disabled = true;
+    updatePinConfirmButton();
   }
 
   // ===== التحقق من اكتمال الرمز السري =====
@@ -1170,17 +1004,14 @@
     const enteredPin = Array.from(inputs).map(input => input.value).join('');
     
     if (enteredPin === DEFAULT_PIN) {
-      // رمز سري صحيح
       setTimeout(() => {
         completeAuthentication('الرمز السري');
         closePinModal();
       }, 300);
     } else {
-      // رمز سري خاطئ
       tg?.HapticFeedback?.notificationOccurred('error');
       document.getElementById('pinError').textContent = 'الرمز السري غير صحيح';
       
-      // رجّ المدخلات
       inputs.forEach(input => {
         input.classList.add('error');
       });
@@ -1205,14 +1036,12 @@
     tg?.HapticFeedback?.notificationOccurred('success');
     showToast(`تم التحقق بنجاح عبر ${method}`);
     
-    // تهيئة التطبيق الرئيسي
     initializeApp();
   }
 
   // ===== تهيئة التطبيق الرئيسي =====
   function initializeApp(){
     if (tg) {
-      tg.ready();
       tg.expand();
 
       tg.setHeaderColor('#1c1c1e');
@@ -1287,7 +1116,6 @@
       if (e.target.closest('.row-icon')) e.preventDefault();
     });
 
-    // حدث إلغاء الرمز السري
     const pinCancelBtn = document.getElementById('pinCancelBtn');
     if (pinCancelBtn) {
       pinCancelBtn.addEventListener('click', function(e) {
@@ -1296,7 +1124,6 @@
       });
     }
 
-    // زر تأكيد الرمز السري
     const pinConfirmBtn = document.getElementById('pinConfirmBtn');
     if (pinConfirmBtn) {
       pinConfirmBtn.addEventListener('click', function(e) {
@@ -1385,19 +1212,99 @@
 
   tg?.BackButton?.onClick(closeLanguagePage);
 
-  // ===== بدء التطبيق =====
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('تم تحميل الصفحة - بدء المصادقة');
-    setTimeout(initAuth, 300); // تأخير قليل للتأكد من تهيئة BiometricManager
+  // ===== بدء المصادقة البيومترية تلقائياً =====
+  function startBiometricAuth(){
+    const biometricManager = tg?.BiometricManager;
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const pinBtn = document.getElementById('pinBtn');
+
+    if (!biometricManager) {
+      console.log('BiometricManager غير متاح - استخدام الرمز السري فقط');
+      authTitle.textContent = 'الرمز السري';
+      authSubtitle.textContent = 'أدخل الرمز السري الخاص بك';
+      pinBtn.style.display = 'block';
+      return;
+    }
+
+    // تهيئة BiometricManager
+    biometricManager.init();
+
+    if (biometricManager.isBiometricAvailable) {
+      console.log('البصمة متاحة - بدء المصادقة التلقائية');
+      biometricAvailable = true;
+      const biometricType = biometricManager.biometricType || 'بصمة';
+      
+      authTitle.textContent = `التحقق عبر ${biometricType}...`;
+      authSubtitle.textContent = 'يرجى الانتظار';
+      pinBtn.style.display = 'block';
+      pinBtn.textContent = 'استخدام الرمز السري';
+
+      // طلب الوصول إذا لم يتم طلبه
+      if (!biometricManager.isAccessGranted && !biometricManager.isAccessRequested) {
+        biometricManager.requestAccess(
+          {reason: 'يلزم التحقق البيومتري للدخول إلى التطبيق'},
+          function(access_granted) {
+            if (access_granted) {
+              performBiometricAuth(biometricManager);
+            } else {
+              showBiometricFailed();
+            }
+          }
+        );
+      } else {
+        performBiometricAuth(biometricManager);
+      }
+    } else {
+      console.log('البصمة غير متاحة - استخدام الرمز السري');
+      biometricAvailable = false;
+      authTitle.textContent = 'الرمز السري';
+      authSubtitle.textContent = 'أدخل الرمز السري الخاص بك';
+      pinBtn.style.display = 'block';
+    }
+  }
+
+  // ===== تنفيذ المصادقة البيومترية =====
+  function performBiometricAuth(biometricManager){
+    biometricManager.authenticate(
+      {reason: 'يرجى التحقق عبر البصمة للمتابعة'},
+      function(success, token) {
+        if (success) {
+          completeAuthentication('البصمة');
+        } else {
+          showBiometricFailed();
+        }
+      }
+    );
+  }
+
+  // ===== عرض رسالة فشل البصمة =====
+  function showBiometricFailed(){
+    const authTitle = document.getElementById('authTitle');
+    const authSubtitle = document.getElementById('authSubtitle');
+    const pinBtn = document.getElementById('pinBtn');
+
+    authTitle.textContent = 'فشلت البصمة';
+    authSubtitle.textContent = 'استخدم الرمز السري بدلاً من ذلك';
+    pinBtn.textContent = 'استخدام الرمز السري';
+    
+    tg?.HapticFeedback?.notificationOccurred('error');
+  }
+
+  // ===== ربط زر الرمز السري =====
+  document.getElementById('pinBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    openPinModal();
   });
 
-  // تشغيل فوري إذا كانت الصفحة جاهزة
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(initAuth, 300);
-    });
-  } else {
-    setTimeout(initAuth, 300);
+  // ===== بدء التطبيق =====
+  window.addEventListener('load', function() {
+    setTimeout(startBiometricAuth, 500);
+  });
+
+  // أو بدء فوري
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(startBiometricAuth, 500);
   }
 </script>
 </body>
