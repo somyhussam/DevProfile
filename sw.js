@@ -1,28 +1,26 @@
-self.addEventListener("push", function(event){
+self.addEventListener("install", event => {
+    self.skipWaiting();
+});
 
-    console.log("Push Event وصل");
+self.addEventListener("activate", event => {
+    event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener("push", event => {
 
     let data = {
-        title: "إشعار",
-        body: "تم استلام Push"
+        title: "اختبار",
+        body: "وصل Push"
     };
 
-    if(event.data){
-        try{
-            data = event.data.json();
-            console.log("Data:", data);
-        }catch(e){
-            console.log(e);
-        }
+    if (event.data) {
+        data = event.data.json();
     }
 
     event.waitUntil(
-        self.registration.showNotification(data.title,{
-            body:data.body,
-            icon:"/icon.png",
-            badge:"/icon.png",
-            requireInteraction:true
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            requireInteraction: true
         })
     );
-
 });
